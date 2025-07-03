@@ -16,7 +16,7 @@ def apply_hook(module: nn.Linear, mask: Tensor):
     return hook
 
 class SparseNetwork(nn.Module):
-    def __init__(self, input_size: int, hidden1_size: int, hidden2_size: int, output_size:int, optimizer, lr:float, device='cuda'):
+    def __init__(self, input_size: int, hidden1_size: int, hidden2_size: int, output_size: int, optimizer=torch.optim.SGD, lr=0.001, device='cuda'):
         torch.manual_seed(41)
         super().__init__()
         self.layer1 = nn.Linear(input_size, hidden1_size).to(device)
@@ -31,9 +31,9 @@ class SparseNetwork(nn.Module):
         return self.layer3(x1)
     
     def masking(self, sparsity: float):
-        self.mask1 = (torch.rand(self.layer1.weight.shape) > sparsity).float().data.to(self.device)
-        self.mask2 = (torch.rand(self.layer2.weight.shape) > sparsity).float().data.to(self.device)
-        self.mask3 = (torch.rand(self.layer3.weight.shape) > sparsity).float().data.to(self.device)
+        self.register_buffer("mask1", (torch.rand(self.layer1.weight.shape) > sparsity).float().data.to(self.device))
+        self.register_buffer("mask2", (torch.rand(self.layer2.weight.shape) > sparsity).float().data.to(self.device))
+        self.register_buffer("mask3", (torch.rand(self.layer3.weight.shape) > sparsity).float().data.to(self.device))
 
     def apply_masks(self):
         self.layer1.register_forward_pre_hook(apply_hook(self.layer1, self.mask1))
