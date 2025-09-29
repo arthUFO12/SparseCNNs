@@ -47,11 +47,11 @@ class SparseNetwork(nn.Module):
 
     def train_model(self, epochs: int, trainloader: DataLoader, lossfunc=torch.nn.CrossEntropyLoss()):
         start = time.time()
+        self.train()
         for i in range(epochs):
             tot_corr = 0
-            for batch_idx, (X, y) in enumerate(trainloader):
+            for batch_idx, (X, y) in enumerate(trainloader, start=1):
                 X, y = X.to(self.device), y.to(self.device)
-                batch_idx += 1
                 y_hat = self(X)
 
                 loss = lossfunc(y_hat, y)
@@ -74,6 +74,7 @@ class SparseNetwork(nn.Module):
     
     @torch.no_grad()
     def eval_model(self, testloader: DataLoader):
+        self.eval()
         tot_corr = 0
         tot = 0
         for idx, (X, y) in enumerate(testloader):
